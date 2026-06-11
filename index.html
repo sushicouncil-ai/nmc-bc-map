@@ -12,7 +12,7 @@
   #map { flex: 1; height: 100%; }
 
   #sidebar {
-    width: 320px; min-width: 320px; height: 100%; overflow-y: auto;
+    width: 420px; min-width: 420px; height: 100%; overflow-y: auto;
     background: #fff; border-right: 1px solid #ddd; box-shadow: 1px 0 4px rgba(0,0,0,.15); z-index: 1001;
   }
   #sidebar.hidden { display: none; }
@@ -24,20 +24,17 @@
     border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
   }
   .legend { font-size: 13.5px; color: #444; }
-  .legend span.pin { display: inline-block; width: 10px; height: 10px; border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg); margin: 0 6px 0 1px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
-  .legend .xbadge, .xbadge {
-    display: inline-flex; width: 16px; height: 16px; border-radius: 50%;
-    background: #2b2b2b; color: #fff; font-size: 11px; font-weight: 900;
-    align-items: center; justify-content: center; margin: 0 5px 0 1px; vertical-align: -3px;
-    border: 1px solid #fff; box-shadow: 0 0 1px #666;
-  }
+  .legend .sq { display: inline-block; width: 13px; height: 13px; border-radius: 3px;
+    background: #2b2b2b; margin: 0 6px 0 1px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
+  .legend .ci { display: inline-block; width: 13px; height: 13px; border-radius: 50%;
+    background: #c8102e; margin: 0 6px 0 1px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
 
   #list { padding: 6px 0 20px; }
   .city { padding: 7px 16px; border-bottom: 1px solid #f3f3f3; cursor: pointer; }
   .city:hover { background: #fdf2f3; }
   .cname { font-size: 15.5px; font-weight: 600; color: #222; }
-  .cname .cnt { color: #c8102e; font-weight: 700; }
+  .cname .cnt { color: #2b2b2b; font-weight: 700; }
+  .cname .cnt.lost { color: #c8102e; }
   .city ul { margin: 3px 0 0; padding-left: 18px; }
   .city li { font-size: 14.5px; color: #333; margin: 1px 0; }
   .city li.inactive { color: #999; font-style: italic; }
@@ -52,12 +49,13 @@
 
   .cluster {
     width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(200,16,46,.9); border: 3px solid rgba(255,255,255,.85);
+    background: rgba(43,43,43,.92); border: 3px solid rgba(255,255,255,.85);
     color: #fff; font-weight: 700; font-size: 16px;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
-  .popup h2 { font-size: 16px; margin: 0 0 6px; }
+  .popup h2 { font-size: 16px; margin: 0 0 4px; }
+  .popup .jobs { font-size: 13.5px; font-weight: 600; color: #555; margin: 0 0 6px; }
   .popup ul { margin: 0; padding-left: 18px; font-size: 15px; }
   .popup li { margin: 2px 0; }
   .popup .inactive { color: #888; font-style: italic; }
@@ -80,9 +78,9 @@
       <p id="totals"></p>
       <input id="search" type="search" placeholder="Search outlets or communities…">
       <div class="legend">
-        <span class="pin" style="background:#c8102e"></span>Active &nbsp;
-        <span class="xbadge">✕</span>Inactive only<br>
-        Click a name to zoom to it. Outlet names appear beside pins as you zoom in.
+        <span class="sq"></span>Active — jobs at stake &nbsp;
+        <span class="ci"></span>Inactive — jobs lost<br>
+        Map numbers are estimated jobs (5 per outlet). Click a name to zoom to it; outlet names appear beside markers as you zoom in.
       </div>
     </div>
     <div id="list"></div>
@@ -186,34 +184,37 @@ const CITIES = [
   { name: "Coquitlam (Tri-Cities)", ll: [49.284, -122.793], outlets: [{ n: "Tri-City News", inactive: true }], note: "Served Coquitlam, Port Coquitlam & Port Moody." },
 ];
 
+const JOBS_PER_OUTLET = 5; // rough estimate of jobs per outlet
+
 const map = L.map("map");
 L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
   maxZoom: 19,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 }).addTo(map);
 
-function pinIcon(color, label) {
-  const html = `<svg width="34" height="44" viewBox="0 0 34 44" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
-    <path d="M17 1C9 1 2.5 7.4 2.5 15.3 2.5 26 17 43 17 43s14.5-17 14.5-27.7C31.5 7.4 25 1 17 1z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
-    <circle cx="17" cy="15.5" r="8.5" fill="#fff" opacity="0.22"/>
-    <text x="17" y="20.5" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
+// Active community: dark square block showing estimated jobs at stake.
+function squareIcon(label) {
+  const html = `<svg width="36" height="36" viewBox="0 0 36 36" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
+    <rect x="2" y="2" width="32" height="32" rx="5" fill="#2b2b2b" stroke="#fff" stroke-width="2.5"/>
+    <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
   </svg>`;
   return L.divIcon({
     html, className: "",
-    iconSize: [34, 44], iconAnchor: [17, 43],
-    tooltipAnchor: [0, -34], popupAnchor: [0, -40],
+    iconSize: [36, 36], iconAnchor: [18, 18],
+    tooltipAnchor: [0, -18], popupAnchor: [0, -20],
   });
 }
 
-function xIcon() {
-  const html = `<svg width="34" height="34" viewBox="0 0 34 34" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
-    <circle cx="17" cy="17" r="15" fill="#2b2b2b" stroke="#fff" stroke-width="2.5"/>
-    <path d="M11 11L23 23M23 11L11 23" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
+// Inactive-only community: red circle showing estimated jobs lost.
+function lostIcon(label) {
+  const html = `<svg width="36" height="36" viewBox="0 0 36 36" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
+    <circle cx="18" cy="18" r="16" fill="#c8102e" stroke="#fff" stroke-width="2.5"/>
+    <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
   </svg>`;
   return L.divIcon({
     html, className: "",
-    iconSize: [34, 34], iconAnchor: [17, 17],
-    tooltipAnchor: [17, -10], popupAnchor: [0, -18],
+    iconSize: [36, 36], iconAnchor: [18, 18],
+    tooltipAnchor: [0, -18], popupAnchor: [0, -20],
   });
 }
 
@@ -221,8 +222,8 @@ const clusters = L.markerClusterGroup({
   maxClusterRadius: 42,
   showCoverageOnHover: false,
   iconCreateFunction: (cluster) => {
-    const outlets = cluster.getAllChildMarkers().reduce((s, m) => s + m.options.outletCount, 0);
-    return L.divIcon({ html: `<div class="cluster">${outlets}</div>`, className: "", iconSize: [42, 42] });
+    const jobs = cluster.getAllChildMarkers().reduce((s, m) => s + m.options.jobsCount, 0);
+    return L.divIcon({ html: `<div class="cluster">${jobs}</div>`, className: "", iconSize: [42, 42] });
   },
 });
 
@@ -237,14 +238,20 @@ CITIES.forEach((c) => {
   totalOutlets += c.outlets.length;
   totalInactive += inactive;
 
+  const jobs = c.outlets.length * JOBS_PER_OUTLET;
+  const lostJobs = inactive * JOBS_PER_OUTLET;
   const marker = L.marker(c.ll, {
-    icon: active > 0 ? pinIcon("#c8102e", c.outlets.length) : xIcon(),
-    outletCount: c.outlets.length,
+    icon: active > 0 ? squareIcon(jobs) : lostIcon(lostJobs),
+    jobsCount: jobs,
   });
 
   let countText = c.outlets.length + (c.outlets.length === 1 ? " outlet" : " outlets");
   if (inactive > 0) countText += active > 0 ? ` (${inactive} inactive)` : " (inactive)";
-  const hoverHtml = `<b>${c.name}</b><br>${countText}`;
+  const jobText =
+    active > 0
+      ? `${jobs} jobs at stake${inactive > 0 ? ` (${lostJobs} lost)` : ""}`
+      : `${lostJobs} jobs lost`;
+  const hoverHtml = `<b>${c.name}</b><br>${jobText}<br>${countText}`;
   const labelHtml = c.outlets
     .map((o) => (o.inactive ? `<span class="inact">✕ ${o.n}</span>` : o.n))
     .join("<br>");
@@ -254,7 +261,7 @@ CITIES.forEach((c) => {
     .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (inactive)" : ""}</li>`)
     .join("");
   const note = c.note ? `<p class="note">${c.note}</p>` : "";
-  marker.bindPopup(`<div class="popup"><h2>${c.name}</h2><ul>${items}</ul>${note}</div>`, { maxWidth: 280 });
+  marker.bindPopup(`<div class="popup"><h2>${c.name}</h2><p class="jobs">${jobText}</p><ul>${items}</ul>${note}</div>`, { maxWidth: 300 });
 
   clusters.addLayer(marker);
   bounds.extend(c.ll);
@@ -277,7 +284,7 @@ function updateLabels() {
     marker.bindTooltip(
       show ? labelHtml : hoverHtml,
       show
-        ? { permanent: true, direction: "right", className: "pin-label", interactive: false }
+        ? { permanent: true, direction: "right", className: "pin-label", interactive: false, offset: [14, 12] }
         : { direction: "top" }
     );
   });
@@ -299,10 +306,15 @@ function renderList(filter) {
     if (q && !matchCity && matchedOutlets.length === 0) return;
     shown++;
     const outlets = q && !matchCity ? matchedOutlets : c.outlets;
+    const act = c.outlets.filter((o) => !o.inactive).length;
+    const inact = c.outlets.length - act;
+    const jt = act > 0
+      ? `${c.outlets.length * JOBS_PER_OUTLET} jobs at stake${inact > 0 ? ` (${inact * JOBS_PER_OUTLET} lost)` : ""}`
+      : `${inact * JOBS_PER_OUTLET} jobs lost`;
     const div = document.createElement("div");
     div.className = "city";
     div.innerHTML =
-      `<div class="cname">${c.name} <span class="cnt">${c.outlets.length}</span></div>` +
+      `<div class="cname">${c.name} <span class="cnt${act > 0 ? "" : " lost"}">${jt}</span></div>` +
       `<ul>${outlets
         .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (inactive)" : ""}</li>`)
         .join("")}</ul>`;
@@ -328,7 +340,8 @@ if (window.innerWidth < 700) {
 }
 
 document.getElementById("totals").textContent =
-  `${totalOutlets} outlets across ${CITIES.length} communities (${totalInactive} inactive). British Columbia only.`;
+  `${totalOutlets} outlets across ${CITIES.length} communities — est. ${totalOutlets * JOBS_PER_OUTLET} jobs at stake, ` +
+  `including ${totalInactive * JOBS_PER_OUTLET} lost at ${totalInactive} inactive outlets. British Columbia only.`;
 </script>
 </body>
 </html>
