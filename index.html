@@ -17,52 +17,56 @@
   }
   #sidebar.hidden { display: none; }
   .side-head { padding: 14px 16px 10px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 1; }
-  .side-head h1 { font-size: 16px; margin: 0 0 4px; }
-  .side-head p { font-size: 12px; margin: 4px 0; color: #444; }
+  .side-head h1 { font-size: 18px; margin: 0 0 4px; }
+  .side-head p { font-size: 14px; margin: 4px 0; color: #444; }
   #search {
     width: 100%; box-sizing: border-box; margin: 8px 0 6px; padding: 7px 10px;
-    border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+    border: 1px solid #ccc; border-radius: 6px; font-size: 15px;
   }
-  .legend { font-size: 11.5px; color: #444; }
+  .legend { font-size: 13.5px; color: #444; }
   .legend span.pin { display: inline-block; width: 10px; height: 10px; border-radius: 50% 50% 50% 0;
     transform: rotate(-45deg); margin: 0 6px 0 1px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
-  .legend .x { color: #777; font-weight: 900; margin: 0 5px 0 1px; }
+  .legend .xbadge, .xbadge {
+    display: inline-flex; width: 16px; height: 16px; border-radius: 50%;
+    background: #2b2b2b; color: #fff; font-size: 11px; font-weight: 900;
+    align-items: center; justify-content: center; margin: 0 5px 0 1px; vertical-align: -3px;
+    border: 1px solid #fff; box-shadow: 0 0 1px #666;
+  }
 
   #list { padding: 6px 0 20px; }
   .city { padding: 7px 16px; border-bottom: 1px solid #f3f3f3; cursor: pointer; }
   .city:hover { background: #fdf2f3; }
-  .cname { font-size: 13.5px; font-weight: 600; color: #222; }
+  .cname { font-size: 15.5px; font-weight: 600; color: #222; }
   .cname .cnt { color: #c8102e; font-weight: 700; }
-  .cname .abtag { color: #a45b00; font-weight: 600; font-size: 11px; }
   .city ul { margin: 3px 0 0; padding-left: 18px; }
-  .city li { font-size: 12.5px; color: #333; margin: 1px 0; }
+  .city li { font-size: 14.5px; color: #333; margin: 1px 0; }
   .city li.inactive { color: #999; font-style: italic; }
-  .nores { padding: 16px; font-size: 13px; color: #777; }
+  .nores { padding: 16px; font-size: 15px; color: #777; }
 
   #toggle {
     position: absolute; top: 10px; left: 10px; z-index: 1002;
     background: #fff; border: 1px solid #ccc; border-radius: 6px;
-    padding: 6px 11px; font-size: 14px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25);
+    padding: 6px 11px; font-size: 16px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25);
   }
   #toggle:hover { background: #f5f5f5; }
 
   .cluster {
     width: 42px; height: 42px; border-radius: 50%;
     background: rgba(200,16,46,.9); border: 3px solid rgba(255,255,255,.85);
-    color: #fff; font-weight: 700; font-size: 14px;
+    color: #fff; font-weight: 700; font-size: 16px;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
-  .popup h2 { font-size: 14px; margin: 0 0 6px; }
-  .popup ul { margin: 0; padding-left: 18px; font-size: 13px; }
+  .popup h2 { font-size: 16px; margin: 0 0 6px; }
+  .popup ul { margin: 0; padding-left: 18px; font-size: 15px; }
   .popup li { margin: 2px 0; }
   .popup .inactive { color: #888; font-style: italic; }
-  .popup .note { font-size: 11px; color: #a45b00; margin: 6px 0 0; }
-  .leaflet-tooltip { font-size: 13px; }
+  .popup .note { font-size: 13px; color: #a45b00; margin: 6px 0 0; }
+  .leaflet-tooltip { font-size: 15px; }
   .pin-label {
     background: rgba(255,255,255,.92); border: 1px solid #ccc; border-radius: 4px;
     box-shadow: 0 1px 2px rgba(0,0,0,.25); padding: 2px 6px;
-    font-size: 11px; line-height: 1.35; color: #222;
+    font-size: 13px; line-height: 1.35; color: #222;
   }
   .pin-label .inact { color: #999; font-style: italic; }
   .pin-label::before { display: none; }
@@ -77,8 +81,7 @@
       <input id="search" type="search" placeholder="Search outlets or communities…">
       <div class="legend">
         <span class="pin" style="background:#c8102e"></span>Active &nbsp;
-        <span class="x">✕</span>Inactive only &nbsp;
-        <span class="pin" style="background:#e69500"></span>In Alberta<br>
+        <span class="xbadge">✕</span>Inactive only<br>
         Click a name to zoom to it. Outlet names appear beside pins as you zoom in.
       </div>
     </div>
@@ -148,7 +151,6 @@ const CITIES = [
   { name: "Sooke", ll: [48.374, -123.726], outlets: [{ n: "Sooke News Mirror", bp: true }] },
   { name: "Summerland", ll: [49.600, -119.679], outlets: [{ n: "Summerland Review", bp: true }] },
   { name: "Surrey", ll: [49.190, -122.849], outlets: [{ n: "Surrey Now-Leader", bp: true }] },
-  { name: "Sylvan Lake, AB", ll: [52.311, -114.096], outlets: [{ n: "Sylvan Lake News", bp: true }], note: "Sylvan Lake is in Alberta, not BC.", ab: true },
   { name: "Terrace", ll: [54.518, -128.603], outlets: [{ n: "Terrace Standard", bp: true }] },
   { name: "Prince Rupert", ll: [54.315, -130.321], outlets: [{ n: "The Prince Rupert Northern View", bp: true }] },
   { name: "Trail", ll: [49.096, -117.710], outlets: [{ n: "Trail Times", bp: true }] },
@@ -194,7 +196,7 @@ function pinIcon(color, label) {
   const html = `<svg width="34" height="44" viewBox="0 0 34 44" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
     <path d="M17 1C9 1 2.5 7.4 2.5 15.3 2.5 26 17 43 17 43s14.5-17 14.5-27.7C31.5 7.4 25 1 17 1z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
     <circle cx="17" cy="15.5" r="8.5" fill="#fff" opacity="0.22"/>
-    <text x="17" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
+    <text x="17" y="20.5" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
   </svg>`;
   return L.divIcon({
     html, className: "",
@@ -204,14 +206,14 @@ function pinIcon(color, label) {
 }
 
 function xIcon() {
-  const html = `<svg width="26" height="26" viewBox="0 0 26 26" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
-    <path d="M5 5L21 21M21 5L5 21" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
-    <path d="M5 5L21 21M21 5L5 21" stroke="#777" stroke-width="4.5" stroke-linecap="round"/>
+  const html = `<svg width="34" height="34" viewBox="0 0 34 34" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
+    <circle cx="17" cy="17" r="15" fill="#2b2b2b" stroke="#fff" stroke-width="2.5"/>
+    <path d="M11 11L23 23M23 11L11 23" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
   </svg>`;
   return L.divIcon({
     html, className: "",
-    iconSize: [26, 26], iconAnchor: [13, 13],
-    tooltipAnchor: [13, -8], popupAnchor: [0, -14],
+    iconSize: [34, 34], iconAnchor: [17, 17],
+    tooltipAnchor: [17, -10], popupAnchor: [0, -18],
   });
 }
 
@@ -235,9 +237,8 @@ CITIES.forEach((c) => {
   totalOutlets += c.outlets.length;
   totalInactive += inactive;
 
-  const color = c.ab ? "#e69500" : "#c8102e";
   const marker = L.marker(c.ll, {
-    icon: active > 0 ? pinIcon(color, c.outlets.length) : xIcon(),
+    icon: active > 0 ? pinIcon("#c8102e", c.outlets.length) : xIcon(),
     outletCount: c.outlets.length,
   });
 
@@ -300,9 +301,8 @@ function renderList(filter) {
     const outlets = q && !matchCity ? matchedOutlets : c.outlets;
     const div = document.createElement("div");
     div.className = "city";
-    const abtag = c.ab ? ' <span class="abtag">(Alberta)</span>' : "";
     div.innerHTML =
-      `<div class="cname">${c.name} <span class="cnt">${c.outlets.length}</span>${abtag}</div>` +
+      `<div class="cname">${c.name} <span class="cnt">${c.outlets.length}</span></div>` +
       `<ul>${outlets
         .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (inactive)" : ""}</li>`)
         .join("")}</ul>`;
@@ -328,7 +328,7 @@ if (window.innerWidth < 700) {
 }
 
 document.getElementById("totals").textContent =
-  `${totalOutlets} outlets across ${CITIES.length} communities (${totalInactive} inactive). Canadian locations only.`;
+  `${totalOutlets} outlets across ${CITIES.length} communities (${totalInactive} inactive). British Columbia only.`;
 </script>
 </body>
 </html>
