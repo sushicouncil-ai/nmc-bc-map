@@ -8,16 +8,44 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
 <style>
   html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  #map { height: 100%; }
-  .panel {
-    position: absolute; top: 10px; right: 10px; z-index: 1000;
-    background: rgba(255,255,255,.96); padding: 12px 16px; border-radius: 8px;
-    box-shadow: 0 1px 6px rgba(0,0,0,.3); max-width: 300px;
+  #app { display: flex; height: 100%; }
+  #map { flex: 1; height: 100%; }
+
+  #sidebar {
+    width: 320px; min-width: 320px; height: 100%; overflow-y: auto;
+    background: #fff; border-right: 1px solid #ddd; box-shadow: 1px 0 4px rgba(0,0,0,.15); z-index: 1001;
   }
-  .panel h1 { font-size: 15px; margin: 0 0 4px; }
-  .panel p { font-size: 12px; margin: 4px 0; color: #444; }
-  .legend-pin { display: inline-block; width: 12px; height: 12px; border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg); margin: 0 8px 0 2px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
+  #sidebar.hidden { display: none; }
+  .side-head { padding: 14px 16px 10px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 1; }
+  .side-head h1 { font-size: 16px; margin: 0 0 4px; }
+  .side-head p { font-size: 12px; margin: 4px 0; color: #444; }
+  #search {
+    width: 100%; box-sizing: border-box; margin: 8px 0 6px; padding: 7px 10px;
+    border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+  }
+  .legend { font-size: 11.5px; color: #444; }
+  .legend span.pin { display: inline-block; width: 10px; height: 10px; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg); margin: 0 6px 0 1px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
+  .legend .x { color: #777; font-weight: 900; margin: 0 5px 0 1px; }
+
+  #list { padding: 6px 0 20px; }
+  .city { padding: 7px 16px; border-bottom: 1px solid #f3f3f3; cursor: pointer; }
+  .city:hover { background: #fdf2f3; }
+  .cname { font-size: 13.5px; font-weight: 600; color: #222; }
+  .cname .cnt { color: #c8102e; font-weight: 700; }
+  .cname .abtag { color: #a45b00; font-weight: 600; font-size: 11px; }
+  .city ul { margin: 3px 0 0; padding-left: 18px; }
+  .city li { font-size: 12.5px; color: #333; margin: 1px 0; }
+  .city li.inactive { color: #999; font-style: italic; }
+  .nores { padding: 16px; font-size: 13px; color: #777; }
+
+  #toggle {
+    position: absolute; top: 10px; left: 10px; z-index: 1002;
+    background: #fff; border: 1px solid #ccc; border-radius: 6px;
+    padding: 6px 11px; font-size: 14px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25);
+  }
+  #toggle:hover { background: #f5f5f5; }
+
   .cluster {
     width: 42px; height: 42px; border-radius: 50%;
     background: rgba(200,16,46,.9); border: 3px solid rgba(255,255,255,.85);
@@ -31,18 +59,34 @@
   .popup .inactive { color: #888; font-style: italic; }
   .popup .note { font-size: 11px; color: #a45b00; margin: 6px 0 0; }
   .leaflet-tooltip { font-size: 13px; }
+  .pin-label {
+    background: rgba(255,255,255,.92); border: 1px solid #ccc; border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.25); padding: 2px 6px;
+    font-size: 11px; line-height: 1.35; color: #222;
+  }
+  .pin-label .inact { color: #999; font-style: italic; }
+  .pin-label::before { display: none; }
 </style>
 </head>
 <body>
-<div id="map"></div>
-<div class="panel">
-  <h1>News Media Canada Member Outlets — British Columbia</h1>
-  <p id="totals"></p>
-  <p><span class="legend-pin" style="background:#c8102e"></span>Active outlet(s)</p>
-  <p><span style="color:#777;font-weight:900;margin:0 7px 0 2px">✕</span>Inactive outlet(s) only</p>
-  <p><span class="legend-pin" style="background:#e69500"></span>Located in Alberta</p>
-  <p>Numbered circles are clusters — click or zoom in to expand. Hover a pin for the outlet count; click it for the list of papers.</p>
+<div id="app">
+  <aside id="sidebar">
+    <div class="side-head">
+      <h1>News Media Canada Member Outlets — BC</h1>
+      <p id="totals"></p>
+      <input id="search" type="search" placeholder="Search outlets or communities…">
+      <div class="legend">
+        <span class="pin" style="background:#c8102e"></span>Active &nbsp;
+        <span class="x">✕</span>Inactive only &nbsp;
+        <span class="pin" style="background:#e69500"></span>In Alberta<br>
+        Click a name to zoom to it. Outlet names appear beside pins as you zoom in.
+      </div>
+    </div>
+    <div id="list"></div>
+  </aside>
+  <div id="map"></div>
 </div>
+<button id="toggle" title="Show/hide outlet list">☰ List</button>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -167,7 +211,7 @@ function xIcon() {
   return L.divIcon({
     html, className: "",
     iconSize: [26, 26], iconAnchor: [13, 13],
-    tooltipAnchor: [0, -12], popupAnchor: [0, -14],
+    tooltipAnchor: [13, -8], popupAnchor: [0, -14],
   });
 }
 
@@ -181,6 +225,8 @@ const clusters = L.markerClusterGroup({
 });
 
 const bounds = L.latLngBounds([]);
+const markerByCity = {};
+const markerInfo = [];
 let totalOutlets = 0, totalInactive = 0;
 
 CITIES.forEach((c) => {
@@ -197,7 +243,11 @@ CITIES.forEach((c) => {
 
   let countText = c.outlets.length + (c.outlets.length === 1 ? " outlet" : " outlets");
   if (inactive > 0) countText += active > 0 ? ` (${inactive} inactive)` : " (inactive)";
-  marker.bindTooltip(`<b>${c.name}</b><br>${countText}`, { direction: "top" });
+  const hoverHtml = `<b>${c.name}</b><br>${countText}`;
+  const labelHtml = c.outlets
+    .map((o) => (o.inactive ? `<span class="inact">✕ ${o.n}</span>` : o.n))
+    .join("<br>");
+  marker.bindTooltip(hoverHtml, { direction: "top" });
 
   const items = c.outlets
     .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (inactive)" : ""}</li>`)
@@ -207,10 +257,75 @@ CITIES.forEach((c) => {
 
   clusters.addLayer(marker);
   bounds.extend(c.ll);
+  markerByCity[c.name] = marker;
+  markerInfo.push({ marker, hoverHtml, labelHtml });
 });
 
 map.addLayer(clusters);
 map.fitBounds(bounds, { padding: [30, 30] });
+
+// Past this zoom, swap hover tooltips for permanent name labels beside each pin.
+const LABEL_ZOOM = 7;
+let labelsShown = null;
+function updateLabels() {
+  const show = map.getZoom() >= LABEL_ZOOM;
+  if (show === labelsShown) return;
+  labelsShown = show;
+  markerInfo.forEach(({ marker, hoverHtml, labelHtml }) => {
+    marker.unbindTooltip();
+    marker.bindTooltip(
+      show ? labelHtml : hoverHtml,
+      show
+        ? { permanent: true, direction: "right", className: "pin-label", interactive: false }
+        : { direction: "top" }
+    );
+  });
+}
+map.on("zoomend", updateLabels);
+updateLabels();
+
+// Sidebar: full outlet directory, searchable, click to zoom.
+const listEl = document.getElementById("list");
+const sorted = [...CITIES].sort((a, b) => a.name.localeCompare(b.name));
+
+function renderList(filter) {
+  const q = (filter || "").trim().toLowerCase();
+  listEl.innerHTML = "";
+  let shown = 0;
+  sorted.forEach((c) => {
+    const matchCity = c.name.toLowerCase().includes(q);
+    const matchedOutlets = c.outlets.filter((o) => o.n.toLowerCase().includes(q));
+    if (q && !matchCity && matchedOutlets.length === 0) return;
+    shown++;
+    const outlets = q && !matchCity ? matchedOutlets : c.outlets;
+    const div = document.createElement("div");
+    div.className = "city";
+    const abtag = c.ab ? ' <span class="abtag">(Alberta)</span>' : "";
+    div.innerHTML =
+      `<div class="cname">${c.name} <span class="cnt">${c.outlets.length}</span>${abtag}</div>` +
+      `<ul>${outlets
+        .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (inactive)" : ""}</li>`)
+        .join("")}</ul>`;
+    div.addEventListener("click", () => {
+      const m = markerByCity[c.name];
+      clusters.zoomToShowLayer(m, () => m.openPopup());
+    });
+    listEl.appendChild(div);
+  });
+  if (!shown) listEl.innerHTML = '<div class="nores">No outlets match that search.</div>';
+}
+renderList("");
+document.getElementById("search").addEventListener("input", (e) => renderList(e.target.value));
+
+document.getElementById("toggle").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("hidden");
+  map.invalidateSize();
+});
+// Start with the sidebar hidden on small screens so the map gets the space.
+if (window.innerWidth < 700) {
+  document.getElementById("sidebar").classList.add("hidden");
+  map.invalidateSize();
+}
 
 document.getElementById("totals").textContent =
   `${totalOutlets} outlets across ${CITIES.length} communities (${totalInactive} inactive). Canadian locations only.`;
