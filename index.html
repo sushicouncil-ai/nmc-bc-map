@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>News Media Canada Member Outlets — British Columbia</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<style>
+  html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  #map { height: 100%; }
+  .panel {
+    position: absolute; top: 10px; right: 10px; z-index: 1000;
+    background: rgba(255,255,255,.96); padding: 12px 16px; border-radius: 8px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.3); max-width: 300px;
+  }
+  .panel h1 { font-size: 15px; margin: 0 0 4px; }
+  .panel p { font-size: 12px; margin: 4px 0; color: #444; }
+  .legend-pin { display: inline-block; width: 12px; height: 12px; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg); margin: 0 8px 0 2px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
+  .cluster {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: rgba(200,16,46,.9); border: 3px solid rgba(255,255,255,.85);
+    color: #fff; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  }
+  .popup h2 { font-size: 14px; margin: 0 0 6px; }
+  .popup ul { margin: 0; padding-left: 18px; font-size: 13px; }
+  .popup li { margin: 2px 0; }
+  .popup .inactive { color: #888; font-style: italic; }
+  .popup .note { font-size: 11px; color: #a45b00; margin: 6px 0 0; }
+  .leaflet-tooltip { font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div class="panel">
+  <h1>News Media Canada Member Outlets — British Columbia</h1>
+  <p id="totals"></p>
+  <p><span class="legend-pin" style="background:#c8102e"></span>Active outlet(s)</p>
+  <p><span style="color:#777;font-weight:900;margin:0 7px 0 2px">✕</span>Inactive outlet(s) only</p>
+  <p><span class="legend-pin" style="background:#e69500"></span>Located in Alberta</p>
+  <p>Numbered circles are clusters — click or zoom in to expand. Hover a pin for the outlet count; click it for the list of papers.</p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+// One entry per community: name, [lat, lng], outlets (bp = Black Press list,
+// inactive flagged per the source table), optional note. Canadian locations only.
+const CITIES = [
+  { name: "100 Mile House", ll: [51.641, -121.297], outlets: [{ n: "100 Mile House Free Press", bp: true }] },
+  { name: "Abbotsford", ll: [49.050, -122.302], outlets: [{ n: "Abbotsford News", bp: true }] },
+  { name: "Agassiz", ll: [49.238, -121.762], outlets: [{ n: "Agassiz Harrison Observer", bp: true }] },
+  { name: "Port Alberni", ll: [49.234, -124.805], outlets: [{ n: "Alberni Valley News", bp: true }] },
+  { name: "Aldergrove", ll: [49.058, -122.470], outlets: [{ n: "Aldergrove Star", bp: true }] },
+  { name: "Ashcroft", ll: [50.725, -121.282], outlets: [{ n: "Ashcroft Journal", bp: true }] },
+  { name: "Barriere", ll: [51.184, -120.123], outlets: [{ n: "Barriere N.T. Star Journal", bp: true }] },
+  { name: "Burns Lake", ll: [54.229, -125.760], outlets: [{ n: "Lakes District News (Burns Lake)", bp: true }] },
+  { name: "Campbell River", ll: [50.024, -125.245], outlets: [{ n: "Campbell River Mirror", bp: true }] },
+  { name: "Castlegar", ll: [49.325, -117.659], outlets: [{ n: "Castlegar News", bp: true }] },
+  { name: "Chemainus", ll: [48.924, -123.717], outlets: [{ n: "Chemainus Valley Courier", bp: true }] },
+  { name: "Chilliwack", ll: [49.158, -121.951], outlets: [{ n: "Chilliwack Progress", bp: true }] },
+  { name: "Clearwater", ll: [51.651, -120.039], outlets: [{ n: "Clearwater Times", bp: true }] },
+  { name: "Cloverdale (Surrey)", ll: [49.105, -122.727], outlets: [{ n: "Cloverdale Reporter", bp: true }] },
+  { name: "Bella Coola", ll: [52.373, -126.752], outlets: [{ n: "Coast Mountain News", bp: true }] },
+  { name: "Courtenay (Comox Valley)", ll: [49.687, -124.993], outlets: [{ n: "Comox Valley Record", bp: true }] },
+  { name: "Duncan", ll: [48.779, -123.708], outlets: [{ n: "Cowichan Valley Citizen", bp: true }] },
+  { name: "Cranbrook", ll: [49.512, -115.769], outlets: [{ n: "Cranbrook Townsman", bp: true }] },
+  { name: "Creston", ll: [49.096, -116.513], outlets: [{ n: "Creston Valley Advance", bp: true }] },
+  { name: "Fernie", ll: [49.504, -115.063], outlets: [{ n: "Fernie Free Press", bp: true }] },
+  { name: "Fort St. James", ll: [54.443, -124.254], outlets: [{ n: "Fort St. James Courier", bp: true }] },
+  { name: "Langford", ll: [48.447, -123.505], outlets: [{ n: "Goldstream Gazette", bp: true }] },
+  { name: "Grand Forks", ll: [49.033, -118.439], outlets: [{ n: "Grand Forks Gazette", bp: true }] },
+  { name: "Daajing Giids (Haida Gwaii)", ll: [53.255, -132.075], outlets: [{ n: "Haida Gwaii Observer", bp: true }] },
+  { name: "Hope", ll: [49.383, -121.441], outlets: [{ n: "Hope Standard", bp: true }] },
+  { name: "Houston", ll: [54.397, -126.670], outlets: [{ n: "Houston Today", bp: true }] },
+  { name: "Kelowna", ll: [49.888, -119.496], outlets: [{ n: "Kelowna Capital News", bp: true }, { n: "Castanet" }, { n: "Kelowna Courier" }] },
+  { name: "Keremeos", ll: [49.203, -119.829], outlets: [{ n: "Keremeos Review", bp: true }] },
+  { name: "Kimberley", ll: [49.670, -115.978], outlets: [{ n: "Kimberley Bulletin", bp: true }] },
+  { name: "Kitimat", ll: [54.052, -128.653], outlets: [{ n: "Kitimat Northern Sentinel", bp: true }] },
+  { name: "Ladysmith", ll: [48.994, -123.820], outlets: [{ n: "Ladysmith Chronicle", bp: true }] },
+  { name: "Lake Country", ll: [50.054, -119.414], outlets: [{ n: "Lake Country Calendar", bp: true }] },
+  { name: "Lake Cowichan", ll: [48.825, -124.053], outlets: [{ n: "Lake Cowichan Gazette", bp: true }] },
+  { name: "Langley", ll: [49.104, -122.660], outlets: [{ n: "Langley Advance Times", bp: true }] },
+  { name: "Maple Ridge", ll: [49.219, -122.598], outlets: [{ n: "Maple Ridge News", bp: true }] },
+  { name: "Mission", ll: [49.133, -122.310], outlets: [{ n: "Mission City Record", bp: true }] },
+  { name: "Nanaimo", ll: [49.166, -123.940], outlets: [{ n: "Nanaimo News Bulletin", bp: true }] },
+  { name: "Nelson", ll: [49.493, -117.294], outlets: [{ n: "Nelson Star", bp: true }] },
+  { name: "North Delta", ll: [49.160, -122.920], outlets: [{ n: "North Delta Reporter", bp: true }] },
+  { name: "Port Hardy", ll: [50.722, -127.493], outlets: [{ n: "North Island Gazette", bp: true }] },
+  { name: "Oak Bay", ll: [48.426, -123.300], outlets: [{ n: "Oak Bay News", bp: true }] },
+  { name: "Parksville", ll: [49.319, -124.314], outlets: [{ n: "Parksville Qualicum Beach News", bp: true }] },
+  { name: "White Rock", ll: [49.025, -122.803], outlets: [{ n: "Peace Arch News", bp: true }] },
+  { name: "Sidney", ll: [48.650, -123.399], outlets: [{ n: "Peninsula News Review", bp: true }] },
+  { name: "Penticton", ll: [49.492, -119.589], outlets: [{ n: "Penticton Western News", bp: true }, { n: "Penticton Herald" }] },
+  { name: "Quesnel", ll: [52.979, -122.493], outlets: [{ n: "Quesnel Cariboo Observer", bp: true }] },
+  { name: "Revelstoke", ll: [50.998, -118.196], outlets: [{ n: "Revelstoke Review", bp: true }] },
+  { name: "Saanich", ll: [48.484, -123.381], outlets: [{ n: "Saanich News", bp: true }] },
+  { name: "Salmon Arm", ll: [50.702, -119.272], outlets: [{ n: "Salmon Arm Observer", bp: true }] },
+  { name: "Princeton", ll: [49.459, -120.506], outlets: [{ n: "Similkameen Spotlight", bp: true }] },
+  { name: "Smithers", ll: [54.781, -127.169], outlets: [{ n: "Smithers Interior News", bp: true }] },
+  { name: "Sooke", ll: [48.374, -123.726], outlets: [{ n: "Sooke News Mirror", bp: true }] },
+  { name: "Summerland", ll: [49.600, -119.679], outlets: [{ n: "Summerland Review", bp: true }] },
+  { name: "Surrey", ll: [49.190, -122.849], outlets: [{ n: "Surrey Now-Leader", bp: true }] },
+  { name: "Sylvan Lake, AB", ll: [52.311, -114.096], outlets: [{ n: "Sylvan Lake News", bp: true }], note: "Sylvan Lake is in Alberta, not BC.", ab: true },
+  { name: "Terrace", ll: [54.518, -128.603], outlets: [{ n: "Terrace Standard", bp: true }] },
+  { name: "Prince Rupert", ll: [54.315, -130.321], outlets: [{ n: "The Prince Rupert Northern View", bp: true }] },
+  { name: "Trail", ll: [49.096, -117.710], outlets: [{ n: "Trail Times", bp: true }] },
+  { name: "Vanderhoof", ll: [54.014, -124.008], outlets: [{ n: "Vanderhoof Omineca Express", bp: true }] },
+  { name: "Vernon", ll: [50.267, -119.272], outlets: [{ n: "Vernon Morning Star", bp: true }] },
+  { name: "Victoria", ll: [48.428, -123.365], outlets: [{ n: "Victoria News", bp: true }, { n: "Victoria Times Colonist" }] },
+  { name: "West Kelowna", ll: [49.862, -119.583], outlets: [{ n: "West K News", bp: true }] },
+  { name: "Ucluelet (Tofino–Ucluelet)", ll: [48.942, -125.546], outlets: [{ n: "Westerly News", bp: true }] },
+  { name: "Williams Lake", ll: [52.141, -122.142], outlets: [{ n: "Williams Lake Tribune", bp: true }] },
+  { name: "Fort St. John", ll: [56.253, -120.846], outlets: [{ n: "Alaska Highway News", inactive: true }] },
+  { name: "Bowen Island", ll: [49.380, -123.336], outlets: [{ n: "Bowen Island Undercurrent" }] },
+  { name: "Burnaby", ll: [49.249, -122.980], outlets: [{ n: "Burnaby Now", inactive: true }] },
+  { name: "Vancouver", ll: [49.282, -123.121], outlets: [{ n: "Business in Vancouver" }, { n: "Vancouver is Awesome" }] },
+  { name: "Sechelt (Sunshine Coast)", ll: [49.474, -123.757], outlets: [{ n: "Coast Reporter" }] },
+  { name: "Dawson Creek", ll: [55.760, -120.236], outlets: [{ n: "Dawson Creek Mirror", inactive: true }, { n: "The Northern Horizon" }], note: "The Northern Horizon serves the wider Peace region." },
+  { name: "Delta (Ladner/Tsawwassen)", ll: [49.085, -123.082], outlets: [{ n: "Delta Optimist" }] },
+  { name: "Fort Nelson", ll: [58.805, -122.697], outlets: [{ n: "Fort Nelson News", inactive: true }] },
+  { name: "Gabriola Island", ll: [49.157, -123.785], outlets: [{ n: "Gabriola Sounder" }] },
+  { name: "Kamloops", ll: [50.676, -120.339], outlets: [{ n: "Kamloops This Week", inactive: true }] },
+  { name: "Lillooet", ll: [50.686, -121.936], outlets: [{ n: "Lillooet Bridge River News" }] },
+  { name: "Lumby", ll: [50.250, -118.967], outlets: [{ n: "Lumby Valley Times" }] },
+  { name: "Merritt", ll: [50.112, -120.786], outlets: [{ n: "Merritt Herald" }] },
+  { name: "New Westminster", ll: [49.206, -122.911], outlets: [{ n: "New Westminster Record", inactive: true }] },
+  { name: "North Vancouver", ll: [49.320, -123.074], outlets: [{ n: "North Shore News" }], note: "Serves West & North Vancouver." },
+  { name: "Armstrong", ll: [50.448, -119.196], outlets: [{ n: "Okanagan Advertiser", inactive: true }], note: "Served the wider Okanagan Valley." },
+  { name: "Peachland", ll: [49.774, -119.737], outlets: [{ n: "Peachland View" }] },
+  { name: "Whistler", ll: [50.116, -122.954], outlets: [{ n: "Pique News Magazine" }], note: "Serves Whistler & Pemberton." },
+  { name: "Powell River", ll: [49.836, -124.525], outlets: [{ n: "Powell River Peak" }] },
+  { name: "Prince George", ll: [53.917, -122.750], outlets: [{ n: "Prince George Citizen" }] },
+  { name: "Richmond", ll: [49.167, -123.137], outlets: [{ n: "Richmond News", inactive: true }] },
+  { name: "Valemount", ll: [52.830, -119.265], outlets: [{ n: "The Rocky Mountain Goat" }], note: "Serves McBride & Valemount." },
+  { name: "Squamish", ll: [49.702, -123.156], outlets: [{ n: "Squamish Chief" }] },
+  { name: "Coquitlam (Tri-Cities)", ll: [49.284, -122.793], outlets: [{ n: "Tri-City News", inactive: true }], note: "Served Coquitlam, Port Coquitlam & Port Moody." },
+];
+
+const map = L.map("map");
+L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+}).addTo(map);
+
+function pinIcon(color, label) {
+  const html = `<svg width="34" height="44" viewBox="0 0 34 44" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
+    <path d="M17 1C9 1 2.5 7.4 2.5 15.3 2.5 26 17 43 17 43s14.5-17 14.5-27.7C31.5 7.4 25 1 17 1z" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="17" cy="15.5" r="8.5" fill="#fff" opacity="0.22"/>
+    <text x="17" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
+  </svg>`;
+  return L.divIcon({
+    html, className: "",
+    iconSize: [34, 44], iconAnchor: [17, 43],
+    tooltipAnchor: [0, -34], popupAnchor: [0, -40],
+  });
+}
+
+function xIcon() {
+  const html = `<svg width="26" height="26" viewBox="0 0 26 26" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">
+    <path d="M5 5L21 21M21 5L5 21" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+    <path d="M5 5L21 21M21 5L5 21" stroke="#777" stroke-width="4.5" stroke-linecap="round"/>
+  </svg>`;
+  return L.divIcon({
+    html, className: "",
+    iconSize: [26, 26], iconAnchor: [13, 13],
+    tooltipAnchor: [0, -12], popupAnchor: [0, -14],
+  });
+}
+
+const clusters = L.markerClusterGroup({
+  maxClusterRadius: 42,
+  showCoverageOnHover: false,
+  iconCreateFunction: (cluster) => {
+    const outlets = cluster.getAllChildMarkers().reduce((s, m) => s + m.options.outletCount, 0);
+    return L.divIcon({ html: `<div class="cluster">${outlets}</div>`, className: "", iconSize: [42, 42] });
+  },
+});
+
+const bounds = L.latLngBounds([]);
+let totalOutlets = 0, totalInactive = 0;
+
+CITIES.forEach((c) => {
+  const active = c.outlets.filter((o) => !o.inactive).length;
+  const inactive = c.outlets.length - active;
+  totalOutlets += c.outlets.length;
+  totalInactive += inactive;
+
+  const color = c.ab ? "#e69500" : "#c8102e";
+  const marker = L.marker(c.ll, {
+    icon: active > 0 ? pinIcon(color, c.outlets.length) : xIcon(),
+    outletCount: c.outlets.length,
+  });
+
+  let countText = c.outlets.length + (c.outlets.length === 1 ? " outlet" : " outlets");
+  if (inactive > 0) countText += active > 0 ? ` (${inactive} inactive)` : " (inactive)";
+  marker.bindTooltip(`<b>${c.name}</b><br>${countText}`, { direction: "top" });
+
+  const items = c.outlets
+    .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (inactive)" : ""}</li>`)
+    .join("");
+  const note = c.note ? `<p class="note">${c.note}</p>` : "";
+  marker.bindPopup(`<div class="popup"><h2>${c.name}</h2><ul>${items}</ul>${note}</div>`, { maxWidth: 280 });
+
+  clusters.addLayer(marker);
+  bounds.extend(c.ll);
+});
+
+map.addLayer(clusters);
+map.fitBounds(bounds, { padding: [30, 30] });
+
+document.getElementById("totals").textContent =
+  `${totalOutlets} outlets across ${CITIES.length} communities (${totalInactive} inactive). Canadian locations only.`;
+</script>
+</body>
+</html>
