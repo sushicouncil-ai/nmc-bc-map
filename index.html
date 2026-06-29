@@ -78,9 +78,9 @@
       <p id="totals"></p>
       <input id="search" type="search" placeholder="Search outlets or communities…">
       <div class="legend">
-        <span class="sq"></span>At risk — jobs at stake &nbsp;
+        <span class="sq"></span>Active outlet &nbsp;
         <span class="ci"></span>Shuttered — jobs lost<br>
-        Map numbers are estimated jobs (5 per outlet). Click a name to zoom to it; outlet names appear beside markers as you zoom in.
+        Numbers on Black Press pins are actual staff (FTE); independent outlets show an estimate (5 per outlet). Click a name to zoom to it; outlet names appear beside markers as you zoom in.
       </div>
     </div>
     <div id="list"></div>
@@ -95,69 +95,69 @@
 // One entry per community: name, [lat, lng], outlets (bp = Black Press list,
 // inactive flagged per the source table), optional note. Canadian locations only.
 const CITIES = [
-  { name: "100 Mile House", ll: [51.641, -121.297], outlets: [{ n: "100 Mile House Free Press", bp: true }] },
-  { name: "Abbotsford", ll: [49.050, -122.302], outlets: [{ n: "Abbotsford News", bp: true }] },
-  { name: "Agassiz", ll: [49.238, -121.762], outlets: [{ n: "Agassiz Harrison Observer", bp: true }] },
-  { name: "Port Alberni", ll: [49.234, -124.805], outlets: [{ n: "Alberni Valley News", bp: true }] },
-  { name: "Aldergrove", ll: [49.058, -122.470], outlets: [{ n: "Aldergrove Star", bp: true }] },
-  { name: "Ashcroft", ll: [50.725, -121.282], outlets: [{ n: "Ashcroft Journal", bp: true }] },
-  { name: "Barriere", ll: [51.184, -120.123], outlets: [{ n: "Barriere N.T. Star Journal", bp: true }] },
-  { name: "Burns Lake", ll: [54.229, -125.760], outlets: [{ n: "Lakes District News (Burns Lake)", bp: true }] },
-  { name: "Campbell River", ll: [50.024, -125.245], outlets: [{ n: "Campbell River Mirror", bp: true }] },
+  { name: "100 Mile House", ll: [51.641, -121.297], fte: 5, outlets: [{ n: "100 Mile House Free Press", bp: true }] },
+  { name: "Abbotsford", ll: [49.050, -122.302], fte: 12, outlets: [{ n: "Abbotsford News", bp: true }] },
+  { name: "Agassiz", ll: [49.238, -121.762], fte: 1, outlets: [{ n: "Agassiz Harrison Observer", bp: true }] },
+  { name: "Port Alberni", ll: [49.234, -124.805], fte: 5, outlets: [{ n: "Alberni Valley News", bp: true }] },
+  { name: "Aldergrove", ll: [49.058, -122.470], fte: 1, outlets: [{ n: "Aldergrove Star", bp: true }] },
+  { name: "Ashcroft", ll: [50.725, -121.282], fte: 1, outlets: [{ n: "Ashcroft Journal", bp: true }] },
+  { name: "Barriere", ll: [51.184, -120.123], fte: 31, outlets: [{ n: "Barriere N.T. Star Journal", bp: true }] },
+  { name: "Burns Lake", ll: [54.229, -125.760], fte: 3, outlets: [{ n: "Lakes District News (Burns Lake)", bp: true }] },
+  { name: "Campbell River", ll: [50.024, -125.245], fte: 7, outlets: [{ n: "Campbell River Mirror", bp: true }] },
   { name: "Castlegar", ll: [49.325, -117.659], outlets: [{ n: "Castlegar News", bp: true }] },
-  { name: "Chemainus", ll: [48.924, -123.717], outlets: [{ n: "Chemainus Valley Courier", bp: true }] },
+  { name: "Chemainus", ll: [48.924, -123.717], fte: 0, outlets: [{ n: "Chemainus Valley Courier", bp: true }], note: "Produced with support from Duncan (Cowichan Valley News)." },
   { name: "Chilliwack", ll: [49.158, -121.951], outlets: [{ n: "Chilliwack Progress", bp: true }] },
-  { name: "Clearwater", ll: [51.651, -120.039], outlets: [{ n: "Clearwater Times", bp: true }] },
-  { name: "Cloverdale (Surrey)", ll: [49.105, -122.727], outlets: [{ n: "Cloverdale Reporter", bp: true }] },
-  { name: "Bella Coola", ll: [52.373, -126.752], outlets: [{ n: "Coast Mountain News", bp: true }] },
-  { name: "Courtenay (Comox Valley)", ll: [49.687, -124.993], outlets: [{ n: "Comox Valley Record", bp: true }] },
-  { name: "Duncan", ll: [48.779, -123.708], outlets: [{ n: "Cowichan Valley Citizen", bp: true }] },
-  { name: "Cranbrook", ll: [49.512, -115.769], outlets: [{ n: "Cranbrook Townsman", bp: true }] },
-  { name: "Creston", ll: [49.096, -116.513], outlets: [{ n: "Creston Valley Advance", bp: true }] },
-  { name: "Fernie", ll: [49.504, -115.063], outlets: [{ n: "Fernie Free Press", bp: true }] },
-  { name: "Fort St. James", ll: [54.443, -124.254], outlets: [{ n: "Fort St. James Courier", bp: true }] },
-  { name: "Langford", ll: [48.447, -123.505], outlets: [{ n: "Goldstream Gazette", bp: true }] },
-  { name: "Grand Forks", ll: [49.033, -118.439], outlets: [{ n: "Grand Forks Gazette", bp: true }] },
-  { name: "Daajing Giids (Haida Gwaii)", ll: [53.255, -132.075], outlets: [{ n: "Haida Gwaii Observer", bp: true }] },
-  { name: "Hope", ll: [49.383, -121.441], outlets: [{ n: "Hope Standard", bp: true }] },
-  { name: "Houston", ll: [54.397, -126.670], outlets: [{ n: "Houston Today", bp: true }] },
-  { name: "Kelowna", ll: [49.888, -119.496], outlets: [{ n: "Kelowna Capital News", bp: true }, { n: "Castanet" }, { n: "Kelowna Courier" }] },
-  { name: "Keremeos", ll: [49.203, -119.829], outlets: [{ n: "Keremeos Review", bp: true }] },
-  { name: "Kimberley", ll: [49.670, -115.978], outlets: [{ n: "Kimberley Bulletin", bp: true }] },
-  { name: "Kitimat", ll: [54.052, -128.653], outlets: [{ n: "Kitimat Northern Sentinel", bp: true }] },
-  { name: "Ladysmith", ll: [48.994, -123.820], outlets: [{ n: "Ladysmith Chronicle", bp: true }] },
-  { name: "Lake Country", ll: [50.054, -119.414], outlets: [{ n: "Lake Country Calendar", bp: true }] },
-  { name: "Lake Cowichan", ll: [48.825, -124.053], outlets: [{ n: "Lake Cowichan Gazette", bp: true }] },
-  { name: "Langley", ll: [49.104, -122.660], outlets: [{ n: "Langley Advance Times", bp: true }] },
-  { name: "Maple Ridge", ll: [49.219, -122.598], outlets: [{ n: "Maple Ridge News", bp: true }] },
-  { name: "Mission", ll: [49.133, -122.310], outlets: [{ n: "Mission City Record", bp: true }] },
-  { name: "Nanaimo", ll: [49.166, -123.940], outlets: [{ n: "Nanaimo News Bulletin", bp: true }] },
-  { name: "Nelson", ll: [49.493, -117.294], outlets: [{ n: "Nelson Star", bp: true }] },
-  { name: "North Delta", ll: [49.160, -122.920], outlets: [{ n: "North Delta Reporter", bp: true }] },
-  { name: "Port Hardy", ll: [50.722, -127.493], outlets: [{ n: "North Island Gazette", bp: true }] },
-  { name: "Oak Bay", ll: [48.426, -123.300], outlets: [{ n: "Oak Bay News", bp: true }] },
-  { name: "Parksville", ll: [49.319, -124.314], outlets: [{ n: "Parksville Qualicum Beach News", bp: true }] },
-  { name: "White Rock", ll: [49.025, -122.803], outlets: [{ n: "Peace Arch News", bp: true }] },
-  { name: "Sidney", ll: [48.650, -123.399], outlets: [{ n: "Peninsula News Review", bp: true }] },
-  { name: "Penticton", ll: [49.492, -119.589], outlets: [{ n: "Penticton Western News", bp: true }, { n: "Penticton Herald" }] },
-  { name: "Quesnel", ll: [52.979, -122.493], outlets: [{ n: "Quesnel Cariboo Observer", bp: true }] },
-  { name: "Revelstoke", ll: [50.998, -118.196], outlets: [{ n: "Revelstoke Review", bp: true }] },
-  { name: "Saanich", ll: [48.484, -123.381], outlets: [{ n: "Saanich News", bp: true }] },
-  { name: "Salmon Arm", ll: [50.702, -119.272], outlets: [{ n: "Salmon Arm Observer", bp: true }] },
-  { name: "Princeton", ll: [49.459, -120.506], outlets: [{ n: "Similkameen Spotlight", bp: true }] },
-  { name: "Smithers", ll: [54.781, -127.169], outlets: [{ n: "Smithers Interior News", bp: true }] },
-  { name: "Sooke", ll: [48.374, -123.726], outlets: [{ n: "Sooke News Mirror", bp: true }] },
-  { name: "Summerland", ll: [49.600, -119.679], outlets: [{ n: "Summerland Review", bp: true }] },
-  { name: "Surrey", ll: [49.190, -122.849], outlets: [{ n: "Surrey Now-Leader", bp: true }] },
-  { name: "Terrace", ll: [54.518, -128.603], outlets: [{ n: "Terrace Standard", bp: true }] },
-  { name: "Prince Rupert", ll: [54.315, -130.321], outlets: [{ n: "The Prince Rupert Northern View", bp: true }] },
-  { name: "Trail", ll: [49.096, -117.710], outlets: [{ n: "Trail Times", bp: true }] },
-  { name: "Vanderhoof", ll: [54.014, -124.008], outlets: [{ n: "Vanderhoof Omineca Express", bp: true }] },
-  { name: "Vernon", ll: [50.267, -119.272], outlets: [{ n: "Vernon Morning Star", bp: true }] },
-  { name: "Victoria", ll: [48.428, -123.365], outlets: [{ n: "Victoria News", bp: true }, { n: "Victoria Times Colonist" }] },
-  { name: "West Kelowna", ll: [49.862, -119.583], outlets: [{ n: "West K News", bp: true }] },
-  { name: "Ucluelet (Tofino–Ucluelet)", ll: [48.942, -125.546], outlets: [{ n: "Westerly News", bp: true }] },
-  { name: "Williams Lake", ll: [52.141, -122.142], outlets: [{ n: "Williams Lake Tribune", bp: true }] },
+  { name: "Clearwater", ll: [51.651, -120.039], fte: 1, outlets: [{ n: "Clearwater Times", bp: true }] },
+  { name: "Cloverdale (Surrey)", ll: [49.105, -122.727], fte: 2, outlets: [{ n: "Cloverdale Reporter", bp: true }] },
+  { name: "Bella Coola", ll: [52.373, -126.752], fte: 0, outlets: [{ n: "Coast Mountain News", bp: true }], note: "Produced with support from Williams Lake." },
+  { name: "Courtenay (Comox Valley)", ll: [49.687, -124.993], fte: 5, outlets: [{ n: "Comox Valley Record", bp: true }] },
+  { name: "Duncan", ll: [48.779, -123.708], fte: 7, outlets: [{ n: "Cowichan Valley Citizen", bp: true }] },
+  { name: "Cranbrook", ll: [49.512, -115.769], fte: 7, outlets: [{ n: "Cranbrook Townsman", bp: true }] },
+  { name: "Creston", ll: [49.096, -116.513], fte: 3, outlets: [{ n: "Creston Valley Advance", bp: true }] },
+  { name: "Fernie", ll: [49.504, -115.063], fte: 2, outlets: [{ n: "Fernie Free Press", bp: true }] },
+  { name: "Fort St. James", ll: [54.443, -124.254], fte: 0, outlets: [{ n: "Fort St. James Courier", bp: true }], note: "Produced with support from Vanderhoof." },
+  { name: "Langford", ll: [48.447, -123.505], fte: 4, outlets: [{ n: "Goldstream Gazette", bp: true }] },
+  { name: "Grand Forks", ll: [49.033, -118.439], fte: 2, outlets: [{ n: "Grand Forks Gazette", bp: true }] },
+  { name: "Daajing Giids (Haida Gwaii)", ll: [53.255, -132.075], fte: 0, outlets: [{ n: "Haida Gwaii Observer", bp: true }], note: "Produced with support from Prince Rupert." },
+  { name: "Hope", ll: [49.383, -121.441], fte: 2, outlets: [{ n: "Hope Standard", bp: true }] },
+  { name: "Houston", ll: [54.397, -126.670], fte: 1, outlets: [{ n: "Houston Today", bp: true }] },
+  { name: "Kelowna", ll: [49.888, -119.496], fte: 33, outlets: [{ n: "Kelowna Capital News", bp: true }, { n: "Castanet" }, { n: "Kelowna Courier" }], note: "Regional hub — 33 FTE including West Kelowna and centralized pagination/editing." },
+  { name: "Keremeos", ll: [49.203, -119.829], fte: 1, outlets: [{ n: "Keremeos Review", bp: true }] },
+  { name: "Kimberley", ll: [49.670, -115.978], fte: 2, outlets: [{ n: "Kimberley Bulletin", bp: true }] },
+  { name: "Kitimat", ll: [54.052, -128.653], fte: 2, outlets: [{ n: "Kitimat Northern Sentinel", bp: true }] },
+  { name: "Ladysmith", ll: [48.994, -123.820], fte: 23, outlets: [{ n: "Ladysmith Chronicle", bp: true }], note: "Includes the regional print plant." },
+  { name: "Lake Country", ll: [50.054, -119.414], fte: 2, outlets: [{ n: "Lake Country Calendar", bp: true }] },
+  { name: "Lake Cowichan", ll: [48.825, -124.053], fte: 1, outlets: [{ n: "Lake Cowichan Gazette", bp: true }] },
+  { name: "Langley", ll: [49.104, -122.660], fte: 7, outlets: [{ n: "Langley Advance Times", bp: true }] },
+  { name: "Maple Ridge", ll: [49.219, -122.598], fte: 5, outlets: [{ n: "Maple Ridge News", bp: true }] },
+  { name: "Mission", ll: [49.133, -122.310], fte: 2, outlets: [{ n: "Mission City Record", bp: true }] },
+  { name: "Nanaimo", ll: [49.166, -123.940], fte: 8, outlets: [{ n: "Nanaimo News Bulletin", bp: true }] },
+  { name: "Nelson", ll: [49.493, -117.294], fte: 4, outlets: [{ n: "Nelson Star", bp: true }] },
+  { name: "North Delta", ll: [49.160, -122.920], fte: 2, outlets: [{ n: "North Delta Reporter", bp: true }] },
+  { name: "Port Hardy", ll: [50.722, -127.493], fte: 2, outlets: [{ n: "North Island Gazette", bp: true }] },
+  { name: "Oak Bay", ll: [48.426, -123.300], fte: 4, outlets: [{ n: "Oak Bay News", bp: true }] },
+  { name: "Parksville", ll: [49.319, -124.314], fte: 5, outlets: [{ n: "Parksville Qualicum Beach News", bp: true }] },
+  { name: "White Rock", ll: [49.025, -122.803], fte: 8, outlets: [{ n: "Peace Arch News", bp: true }] },
+  { name: "Sidney", ll: [48.650, -123.399], fte: 3, outlets: [{ n: "Peninsula News Review", bp: true }] },
+  { name: "Penticton", ll: [49.492, -119.589], fte: 5, outlets: [{ n: "Penticton Western News", bp: true }, { n: "Penticton Herald" }] },
+  { name: "Quesnel", ll: [52.979, -122.493], fte: 3, outlets: [{ n: "Quesnel Cariboo Observer", bp: true }] },
+  { name: "Revelstoke", ll: [50.998, -118.196], fte: 2, outlets: [{ n: "Revelstoke Review", bp: true }] },
+  { name: "Saanich", ll: [48.484, -123.381], fte: 4, outlets: [{ n: "Saanich News", bp: true }] },
+  { name: "Salmon Arm", ll: [50.702, -119.272], fte: 6, outlets: [{ n: "Salmon Arm Observer", bp: true }] },
+  { name: "Princeton", ll: [49.459, -120.506], fte: 31, outlets: [{ n: "Similkameen Spotlight", bp: true }] },
+  { name: "Smithers", ll: [54.781, -127.169], fte: 3, outlets: [{ n: "Smithers Interior News", bp: true }] },
+  { name: "Sooke", ll: [48.374, -123.726], fte: 3, outlets: [{ n: "Sooke News Mirror", bp: true }] },
+  { name: "Summerland", ll: [49.600, -119.679], fte: 2, outlets: [{ n: "Summerland Review", bp: true }] },
+  { name: "Surrey", ll: [49.190, -122.849], fte: 79, outlets: [{ n: "Surrey Now-Leader", bp: true }], note: "Includes accounting, payroll, digital, BP Tech and HR." },
+  { name: "Terrace", ll: [54.518, -128.603], fte: 2, outlets: [{ n: "Terrace Standard", bp: true }] },
+  { name: "Prince Rupert", ll: [54.315, -130.321], fte: 4, outlets: [{ n: "The Prince Rupert Northern View", bp: true }] },
+  { name: "Trail", ll: [49.096, -117.710], fte: 3, outlets: [{ n: "Trail Times", bp: true }] },
+  { name: "Vanderhoof", ll: [54.014, -124.008], fte: 1, outlets: [{ n: "Vanderhoof Omineca Express", bp: true }] },
+  { name: "Vernon", ll: [50.267, -119.272], fte: 39, outlets: [{ n: "Vernon Morning Star", bp: true }], note: "39 FTE — 10 editorial plus 29 press/mailroom." },
+  { name: "Victoria", ll: [48.428, -123.365], fte: 13, outlets: [{ n: "Victoria News", bp: true }, { n: "Victoria Times Colonist" }], note: "Includes the sponsored-content division." },
+  { name: "West Kelowna", ll: [49.862, -119.583], fte: 0, outlets: [{ n: "West K News", bp: true }], note: "Staff counted under the Kelowna hub." },
+  { name: "Ucluelet (Tofino–Ucluelet)", ll: [48.942, -125.546], fte: 2, outlets: [{ n: "Westerly News", bp: true }] },
+  { name: "Williams Lake", ll: [52.141, -122.142], fte: 10, outlets: [{ n: "Williams Lake Tribune", bp: true }], note: "Includes publication and press/mailroom." },
   { name: "Fort St. John", ll: [56.253, -120.846], outlets: [{ n: "Alaska Highway News", inactive: true }] },
   { name: "Bowen Island", ll: [49.380, -123.336], outlets: [{ n: "Bowen Island Undercurrent" }] },
   { name: "Burnaby", ll: [49.249, -122.980], outlets: [{ n: "Burnaby Now", inactive: true }] },
@@ -230,27 +230,47 @@ const clusters = L.markerClusterGroup({
 const bounds = L.latLngBounds([]);
 const markerByCity = {};
 const markerInfo = [];
-let totalOutlets = 0, totalInactive = 0;
+let totalOutlets = 0, totalInactive = 0, totalFte = 0, fteCommunities = 0;
 
-CITIES.forEach((c) => {
+// Headline number per community: actual Black Press staff (FTE) where known,
+// otherwise the 5-per-outlet estimate; shuttered-only communities show jobs lost.
+function cityStats(c) {
   const active = c.outlets.filter((o) => !o.inactive).length;
   const inactive = c.outlets.length - active;
-  totalOutlets += c.outlets.length;
-  totalInactive += inactive;
+  const hasFte = typeof c.fte === "number";
+  let headline, jobText, lost;
+  if (active === 0) {
+    headline = inactive * JOBS_PER_OUTLET;
+    jobText = `${headline} jobs lost`;
+    lost = true;
+  } else if (hasFte) {
+    headline = c.fte;
+    jobText = c.fte === 0 ? "0 local FTE" : `${c.fte} staff (FTE)`;
+    if (inactive > 0) jobText += ` · ${inactive * JOBS_PER_OUTLET} lost`;
+    lost = false;
+  } else {
+    headline = c.outlets.length * JOBS_PER_OUTLET;
+    jobText = `~${headline} jobs (est.)`;
+    if (inactive > 0) jobText += ` · ${inactive * JOBS_PER_OUTLET} lost`;
+    lost = false;
+  }
+  return { active, inactive, hasFte, headline, jobText, lost };
+}
 
-  const jobs = c.outlets.length * JOBS_PER_OUTLET;
-  const lostJobs = inactive * JOBS_PER_OUTLET;
+CITIES.forEach((c) => {
+  const s = cityStats(c);
+  totalOutlets += c.outlets.length;
+  totalInactive += s.inactive;
+  if (s.hasFte) { totalFte += c.fte; fteCommunities++; }
+
   const marker = L.marker(c.ll, {
-    icon: active > 0 ? squareIcon(jobs) : lostIcon(lostJobs),
-    jobsCount: jobs,
+    icon: s.active > 0 ? squareIcon(s.headline) : lostIcon(s.headline),
+    jobsCount: s.headline,
   });
 
   let countText = c.outlets.length + (c.outlets.length === 1 ? " outlet" : " outlets");
-  if (inactive > 0) countText += active > 0 ? ` (${inactive} shuttered)` : " (shuttered)";
-  const jobText =
-    active > 0
-      ? `${jobs} jobs at stake${inactive > 0 ? ` (${lostJobs} lost)` : ""}`
-      : `${lostJobs} jobs lost`;
+  if (s.inactive > 0) countText += s.active > 0 ? ` (${s.inactive} shuttered)` : " (shuttered)";
+  const jobText = s.jobText;
   const hoverHtml = `<b>${c.name}</b><br>${jobText}<br>${countText}`;
   const labelHtml = c.outlets
     .map((o) => (o.inactive ? `<span class="inact">✕ ${o.n}</span>` : o.n))
@@ -306,15 +326,12 @@ function renderList(filter) {
     if (q && !matchCity && matchedOutlets.length === 0) return;
     shown++;
     const outlets = q && !matchCity ? matchedOutlets : c.outlets;
-    const act = c.outlets.filter((o) => !o.inactive).length;
-    const inact = c.outlets.length - act;
-    const jt = act > 0
-      ? `${c.outlets.length * JOBS_PER_OUTLET} jobs at stake${inact > 0 ? ` (${inact * JOBS_PER_OUTLET} lost)` : ""}`
-      : `${inact * JOBS_PER_OUTLET} jobs lost`;
+    const s = cityStats(c);
+    const jt = s.jobText;
     const div = document.createElement("div");
     div.className = "city";
     div.innerHTML =
-      `<div class="cname">${c.name} <span class="cnt${act > 0 ? "" : " lost"}">${jt}</span></div>` +
+      `<div class="cname">${c.name} <span class="cnt${s.lost ? " lost" : ""}">${jt}</span></div>` +
       `<ul>${outlets
         .map((o) => `<li${o.inactive ? ' class="inactive"' : ""}>${o.inactive ? "✕ " : ""}${o.n}${o.inactive ? " (shuttered)" : ""}</li>`)
         .join("")}</ul>`;
@@ -340,8 +357,9 @@ if (window.innerWidth < 700) {
 }
 
 document.getElementById("totals").textContent =
-  `${totalOutlets} outlets across ${CITIES.length} communities — est. ${totalOutlets * JOBS_PER_OUTLET} jobs at stake, ` +
-  `including ${totalInactive * JOBS_PER_OUTLET} lost at ${totalInactive} shuttered outlets. British Columbia only.`;
+  `${totalFte} Black Press staff (FTE) across ${fteCommunities} BC communities. ` +
+  `${totalOutlets} outlets across ${CITIES.length} communities in total, ` +
+  `including ${totalInactive} shuttered (est. ${totalInactive * JOBS_PER_OUTLET} jobs lost). British Columbia only.`;
 </script>
 </body>
 </html>
