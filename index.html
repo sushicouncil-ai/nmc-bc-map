@@ -6,8 +6,11 @@
 <title>News Media Canada Member Outlets — British Columbia</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap">
 <style>
-  html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  html, body { height: 100%; margin: 0; font-family: 'Open Sans', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   #app { display: flex; height: 100%; }
   #map { flex: 1; height: 100%; }
 
@@ -16,8 +19,8 @@
     background: #fff; border-right: 1px solid #ddd; box-shadow: 1px 0 4px rgba(0,0,0,.15); z-index: 1001;
   }
   #sidebar.hidden { display: none; }
-  .side-head { padding: 14px 16px 10px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: #fff; z-index: 1; }
-  .side-head h1 { font-size: 18px; margin: 0 0 4px; }
+  .side-head { padding: 14px 16px 10px; border-bottom: 3px solid #28B088; position: sticky; top: 0; background: #fff; z-index: 1; }
+  .side-head h1 { font-size: 19px; margin: 0 0 4px; font-family: 'Montserrat', sans-serif; font-weight: 800; color: #304080; letter-spacing: .2px; }
   .side-head p { font-size: 14px; margin: 4px 0; color: #444; }
   #search {
     width: 100%; box-sizing: border-box; margin: 8px 0 6px; padding: 7px 10px;
@@ -25,16 +28,16 @@
   }
   .legend { font-size: 13.5px; color: #444; }
   .legend .sq { display: inline-block; width: 13px; height: 13px; border-radius: 3px;
-    background: #c8102e; margin: 0 6px 0 1px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
+    background: #1f8a68; margin: 0 6px 0 1px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
   .legend .ci { display: inline-block; width: 13px; height: 13px; border-radius: 3px;
-    background: #2b2b2b; margin: 0 6px 0 1px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
+    background: #304080; margin: 0 6px 0 1px; vertical-align: -2px; border: 1px solid #fff; box-shadow: 0 0 1px #666; }
 
   #list { padding: 6px 0 20px; }
   .city { padding: 7px 16px; border-bottom: 1px solid #f3f3f3; cursor: pointer; }
-  .city:hover { background: #fdf2f3; }
+  .city:hover { background: #eef1f9; }
   .cname { font-size: 15.5px; font-weight: 600; color: #222; }
-  .cname .cnt { color: #c8102e; font-weight: 700; }
-  .cname .cnt.lost { color: #2b2b2b; }
+  .cname .cnt { color: #1f8a68; font-weight: 700; }
+  .cname .cnt.lost { color: #304080; }
   .city ul { margin: 3px 0 0; padding-left: 18px; }
   .city li { font-size: 14.5px; color: #333; margin: 1px 0; }
   .city li.inactive { color: #999; font-style: italic; }
@@ -49,17 +52,17 @@
 
   .cluster {
     width: 42px; height: 42px; border-radius: 50%;
-    background: rgba(200,16,46,.9); border: 3px solid rgba(255,255,255,.85);
-    color: #fff; font-weight: 700; font-size: 16px;
+    background: rgba(31,138,104,.92); border: 3px solid rgba(255,255,255,.85);
+    color: #fff; font-weight: 700; font-size: 16px; font-family: 'Montserrat', sans-serif;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 1px 4px rgba(0,0,0,.4);
   }
-  .popup h2 { font-size: 16px; margin: 0 0 4px; }
+  .popup h2 { font-size: 16px; margin: 0 0 4px; font-family: 'Montserrat', sans-serif; font-weight: 700; color: #304080; }
   .popup .jobs { font-size: 13.5px; font-weight: 600; color: #555; margin: 0 0 6px; }
   .popup ul { margin: 0; padding-left: 18px; font-size: 15px; }
   .popup li { margin: 2px 0; }
   .popup .inactive { color: #888; font-style: italic; }
-  .popup .note { font-size: 13px; color: #a45b00; margin: 6px 0 0; }
+  .popup .note { font-size: 13px; color: #1f7a5e; margin: 6px 0 0; }
   .leaflet-tooltip { font-size: 15px; }
   .pin-label {
     background: rgba(255,255,255,.92); border: 1px solid #ccc; border-radius: 4px;
@@ -195,8 +198,8 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r
 // Active community: dark square block showing estimated jobs at stake.
 function squareIcon(label) {
   const html = `<svg width="36" height="36" viewBox="0 0 36 36" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
-    <rect x="2" y="2" width="32" height="32" rx="5" fill="#c8102e" stroke="#fff" stroke-width="2.5"/>
-    <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
+    <rect x="2" y="2" width="32" height="32" rx="5" fill="#1f8a68" stroke="#fff" stroke-width="2.5"/>
+    <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Montserrat,system-ui,sans-serif">${label}</text>
   </svg>`;
   return L.divIcon({
     html, className: "",
@@ -208,8 +211,8 @@ function squareIcon(label) {
 // Inactive-only community: black square showing estimated jobs lost.
 function lostIcon(label) {
   const html = `<svg width="36" height="36" viewBox="0 0 36 36" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))">
-    <rect x="2" y="2" width="32" height="32" rx="5" fill="#2b2b2b" stroke="#fff" stroke-width="2.5"/>
-    <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="system-ui,sans-serif">${label}</text>
+    <rect x="2" y="2" width="32" height="32" rx="5" fill="#304080" stroke="#fff" stroke-width="2.5"/>
+    <text x="18" y="23" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Montserrat,system-ui,sans-serif">${label}</text>
   </svg>`;
   return L.divIcon({
     html, className: "",
